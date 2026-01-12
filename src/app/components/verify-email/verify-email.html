@@ -1,0 +1,65 @@
+<div class="verify-container">
+  <div class="verify-card">
+    <div class="verify-header">
+      <h2>Verify Your Email</h2>
+      <p class="subtitle">We've sent a 6-digit verification code to</p>
+      <p class="email">{{ userEmail() }}</p>
+    </div>
+
+    <div class="verify-form">
+      <div class="form-group">
+        <label for="code">Verification Code</label>
+        <input
+          type="text"
+          id="code"
+          class="code-input"
+          [value]="verificationCode()"
+          (input)="onCodeInput($event)"
+          placeholder="000000"
+          maxlength="6"
+          pattern="\d*"
+          inputmode="numeric"
+          [disabled]="isLoading()"
+        />
+        <p class="hint">Enter the 6-digit code from your email</p>
+      </div>
+
+      <button 
+        class="btn-verify"
+        (click)="verifyCode()"
+        [disabled]="isLoading() || verificationCode().length !== 6"
+      >
+        <span *ngIf="!isLoading()">Verify Email</span>
+        <span *ngIf="isLoading()" class="loading">
+          <span class="spinner"></span> Verifying...
+        </span>
+      </button>
+
+      <div class="resend-section">
+        <p>Didn't receive the code?</p>
+        <button 
+          class="btn-resend"
+          (click)="resendCode()"
+          [disabled]="isLoading() || resendCooldown() > 0"
+        >
+          <span *ngIf="resendCooldown() === 0">Resend Code</span>
+          <span *ngIf="resendCooldown() > 0">Resend in {{ resendCooldown() }}s</span>
+        </button>
+      </div>
+
+      <button class="btn-back" (click)="backToLogin()">
+        ← Back to Login
+      </button>
+    </div>
+
+    <div class="info-box">
+      <svg class="info-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9V9h2v6zm0-8H9V5h2v2z" fill="currentColor"/>
+      </svg>
+      <div class="info-text">
+        <strong>Note:</strong> The verification code will expire in 10 minutes. 
+        Make sure to check your spam folder if you don't see the email.
+      </div>
+    </div>
+  </div>
+</div>

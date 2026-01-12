@@ -1,0 +1,70 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'leaflet/dist/leaflet.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+/* Custom Leaflet Popup Styles */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-popup-content {
+  margin: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.poi-popup h3,
+.connection-popup h3 {
+  font-weight: 600;
+}
+
+.poi-popup p,
+.connection-popup p {
+  line-height: 1.6;
+}
+
+/* Connection line enhancements */
+.leaflet-interactive.connection-line {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.leaflet-interactive.connection-line:hover {
+  stroke-width: 9 !important;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+  animation: linePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes linePulse {
+  0%, 100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Animated dash for blocked line of sight */
+.leaflet-interactive.connection-line[stroke-dasharray] {
+  animation: dashFlow 2s linear infinite;
+}
+
+@keyframes dashFlow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 20;
+  }
+}

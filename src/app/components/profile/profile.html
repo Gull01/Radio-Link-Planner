@@ -1,0 +1,415 @@
+<div class="profile-container">
+  @if (selectedConnection) {
+    <div class="profile-header">
+      <div class="header-content">
+        <h3>📈 Elevation Profile</h3>
+        <div class="connection-info">
+          <span class="route">{{ selectedConnection.fromPOI.name }} ➜ {{ selectedConnection.toPOI.name }}</span>
+        </div>
+      </div>
+      <button 
+        class="export-pdf-btn" 
+        (click)="exportToPdf()"
+        [disabled]="isExportingPdf()"
+        title="Export to PDF">
+        @if (isExportingPdf()) {
+          <span class="spinner-small"></span> Exporting...
+        } @else {
+          📄 Export PDF
+        }
+      </button>
+    </div>
+
+    <div class="tower-controls">
+      <div class="tower-input-group">
+        <label>
+          <span class="tower-label">🗼 {{ selectedConnection.fromPOI.name }} Tower Height:</span>
+          <div class="input-with-unit">
+            <input 
+              type="number" 
+              [value]="fromTowerHeight()" 
+              (input)="updateTowerHeight('from', +$any($event.target).value)"
+              min="0"
+              max="500"
+              step="5"
+              class="tower-input"
+            />
+            <span class="unit">m</span>
+          </div>
+        </label>
+        <input 
+          type="range" 
+          [value]="fromTowerHeight()" 
+          (input)="updateTowerHeight('from', +$any($event.target).value)"
+          min="0"
+          max="200"
+          step="5"
+          class="tower-slider"
+        />
+      </div>
+      
+      <div class="tower-input-group">
+        <label>
+          <span class="tower-label">🗼 {{ selectedConnection.toPOI.name }} Tower Height:</span>
+          <div class="input-with-unit">
+            <input 
+              type="number" 
+              [value]="toTowerHeight()" 
+              (input)="updateTowerHeight('to', +$any($event.target).value)"
+              min="0"
+              max="500"
+              step="5"
+              class="tower-input"
+            />
+            <span class="unit">m</span>
+          </div>
+        </label>
+        <input 
+          type="range" 
+          [value]="toTowerHeight()" 
+          (input)="updateTowerHeight('to', +$any($event.target).value)"
+          min="0"
+          max="200"
+          step="5"
+          class="tower-slider"
+        />
+      </div>
+    </div>
+
+    <div class="profile-stats">
+      <div class="stat">
+        <span class="label">Distance:</span>
+        <span class="value">{{ selectedConnection.distance.toFixed(2) }} km</span>
+      </div>
+      @if (losAnalysis()) {
+        <div class="stat">
+          <span class="label">Signal Strength:</span>
+          <span class="value signal-badge" [class]="losAnalysis()!.status">
+            {{ losAnalysis()!.signalStrength }}%
+          </span>
+        </div>
+        <div class="stat">
+          <span class="label">Clearance:</span>
+          <span class="value" [style.color]="losAnalysis()!.minClearance > 0 ? '#4CAF50' : '#F44336'">
+            {{ losAnalysis()!.minClearance.toFixed(1) }} m
+          </span>
+        </div>
+      }
+    </div>
+
+    <!-- LOS Analysis - Compact Status Bar -->
+    @if (losAnalysis()) {
+      <div class="status-bar">
+        <div class="status-item" [class]="'status-' + losAnalysis()!.status">
+          <span class="status-label">Line of Sight:</span>
+          <span class="status-value">
+            @switch (losAnalysis()!.status) {
+              @case ('excellent') { ⭐ Excellent }
+              @case ('good') { ✅ Good }
+              @case ('fair') { ⚡ Fair }
+              @case ('poor') { ⚠️ Poor }
+              @case ('blocked') { 🚫 Blocked }
+            }
+          </span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Clearance:</span>
+          <span class="status-value" [style.color]="losAnalysis()!.minClearance > 0 ? '#4CAF50' : '#F44336'">
+            {{ losAnalysis()!.minClearance.toFixed(1) }}m
+          </span>
+        </div>
+        <div class="status-item" [class.signal-weak]="losAnalysis()!.signalStrength < 50">
+          <span class="status-label">Signal Strength:</span>
+          <span class="status-value">{{ losAnalysis()!.signalStrength }}%</span>
+        </div>
+      </div>
+    }
+
+    @if (selectedConnection.elevationProfile && selectedConnection.elevationProfile.length > 0) {
+      <div class="chart-container">
+        <svg [attr.width]="chartWidth" [attr.height]="chartHeight" class="elevation-chart">
+          <defs>
+            <linearGradient id="elevationGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:0.8" />
+              <stop offset="100%" style="stop-color:#2196F3;stop-opacity:0.3" />
+            </linearGradient>
+          </defs>
+
+          <!-- Chart group with padding -->
+          <g [attr.transform]="'translate(' + padding.left + ',' + padding.top + ')'">
+            <!-- Grid lines -->
+            @for (tick of yTicks(); track tick.value) {
+              <line 
+                [attr.x1]="0" 
+                [attr.y1]="tick.position"
+                [attr.x2]="chartWidth - padding.left - padding.right"
+                [attr.y2]="tick.position"
+                class="grid-line"
+              />
+            }
+
+            <!-- Elevation area -->
+            <path 
+              [attr.d]="pathData()" 
+              class="elevation-path"
+              fill="url(#elevationGradient)"
+              stroke="#2196F3"
+              stroke-width="2"
+            />
+
+            <!-- Line of Sight with Tower Heights -->
+            @if (losLineData()) {
+              <path 
+                [attr.d]="losLineData()" 
+                class="los-line"
+                stroke="#FF5722"
+                stroke-width="3"
+                stroke-dasharray="5, 5"
+                fill="none"
+              />
+            }
+
+            <!-- Points -->
+            @for (point of points(); track $index) {
+              <circle
+                [attr.cx]="point.x"
+                [attr.cy]="point.y"
+                r="3"
+                class="elevation-point"
+              >
+                <title>Distance: {{ point.distance.toFixed(2) }} km&#10;Elevation: {{ point.elevation.toFixed(0) }} m</title>
+              </circle>
+            }
+
+            <!-- Start and end markers (ground level) -->
+            @if (points().length > 0) {
+              <circle
+                [attr.cx]="points()[0].x"
+                [attr.cy]="points()[0].y"
+                r="5"
+                class="marker-point ground"
+                fill="#666"
+              />
+              <circle
+                [attr.cx]="points()[points().length - 1].x"
+                [attr.cy]="points()[points().length - 1].y"
+                r="5"
+                class="marker-point ground"
+                fill="#666"
+              />
+            }
+
+            <!-- Tower markers (with height) -->
+            @if (points().length > 0 && (fromTowerHeight() > 0 || toTowerHeight() > 0)) {
+              <g>
+                <!-- Start tower -->
+                <line
+                  [attr.x1]="points()[0].x"
+                  [attr.y1]="points()[0].y"
+                  [attr.x2]="points()[0].x"
+                  [attr.y2]="points()[0].y - (fromTowerHeight() / (yScale().max - yScale().min)) * (chartHeight - padding.top - padding.bottom)"
+                  stroke="#4CAF50"
+                  stroke-width="3"
+                  class="tower-line"
+                />
+                <circle
+                  [attr.cx]="points()[0].x"
+                  [attr.cy]="points()[0].y - (fromTowerHeight() / (yScale().max - yScale().min)) * (chartHeight - padding.top - padding.bottom)"
+                  r="6"
+                  class="marker-point start"
+                />
+                <text
+                  [attr.x]="points()[0].x"
+                  [attr.y]="points()[0].y - (fromTowerHeight() / (yScale().max - yScale().min)) * (chartHeight - padding.top - padding.bottom) - 12"
+                  class="tower-label-text"
+                  text-anchor="middle"
+                >
+                  {{ fromTowerHeight() }}m
+                </text>
+
+                <!-- End tower -->
+                <line
+                  [attr.x1]="points()[points().length - 1].x"
+                  [attr.y1]="points()[points().length - 1].y"
+                  [attr.x2]="points()[points().length - 1].x"
+                  [attr.y2]="points()[points().length - 1].y - (toTowerHeight() / (yScale().max - yScale().min)) * (chartHeight - padding.top - padding.bottom)"
+                  stroke="#F44336"
+                  stroke-width="3"
+                  class="tower-line"
+                />
+                <circle
+                  [attr.cx]="points()[points().length - 1].x"
+                  [attr.cy]="points()[points().length - 1].y - (toTowerHeight() / (yScale().max - yScale().min)) * (chartHeight - padding.top - padding.bottom)"
+                  r="6"
+                  class="marker-point end"
+                />
+                <text
+                  [attr.x]="points()[points().length - 1].x"
+                  [attr.y]="points()[points().length - 1].y - (toTowerHeight() / (yScale().max - yScale().min)) * (chartHeight - padding.top - padding.bottom) - 12"
+                  class="tower-label-text"
+                  text-anchor="middle"
+                >
+                  {{ toTowerHeight() }}m
+                </text>
+              </g>
+            }
+
+            <!-- X-axis -->
+            <line 
+              [attr.x1]="0" 
+              [attr.y1]="chartHeight - padding.top - padding.bottom"
+              [attr.x2]="chartWidth - padding.left - padding.right"
+              [attr.y2]="chartHeight - padding.top - padding.bottom"
+              class="axis-line"
+            />
+
+            <!-- Y-axis -->
+            <line 
+              [attr.x1]="0" 
+              [attr.y1]="0"
+              [attr.x2]="0"
+              [attr.y2]="chartHeight - padding.top - padding.bottom"
+              class="axis-line"
+            />
+
+            <!-- X-axis ticks and labels -->
+            @for (tick of xTicks(); track tick.value) {
+              <g [attr.transform]="'translate(' + tick.position + ',0)'">
+                <line 
+                  [attr.y1]="chartHeight - padding.top - padding.bottom"
+                  [attr.y2]="chartHeight - padding.top - padding.bottom + 5"
+                  class="tick-line"
+                />
+                <text 
+                  [attr.y]="chartHeight - padding.top - padding.bottom + 20"
+                  class="tick-label"
+                >
+                  {{ tick.value.toFixed(1) }}
+                </text>
+              </g>
+            }
+
+            <!-- Y-axis ticks and labels -->
+            @for (tick of yTicks(); track tick.value) {
+              <g [attr.transform]="'translate(0,' + tick.position + ')'">
+                <line 
+                  x1="-5"
+                  x2="0"
+                  class="tick-line"
+                />
+                <text 
+                  x="-10"
+                  class="tick-label"
+                  text-anchor="end"
+                >
+                  {{ tick.value.toFixed(0) }}
+                </text>
+              </g>
+            }
+
+            <!-- Axis labels -->
+            <text 
+              [attr.x]="(chartWidth - padding.left - padding.right) / 2"
+              [attr.y]="chartHeight - padding.top - padding.bottom + 35"
+              class="axis-label"
+            >
+              Distance (km)
+            </text>
+
+            <text 
+              [attr.x]="-(chartHeight - padding.top - padding.bottom) / 2"
+              y="-45"
+              class="axis-label"
+              transform="rotate(-90)"
+            >
+              Elevation (m)
+            </text>
+          </g>
+        </svg>
+      </div>
+    } @else {
+      <div class="loading">
+        <p>⏳ Loading elevation data...</p>
+      </div>
+    }
+
+    <!-- Device Recommendations Section -->
+    <div class="device-recommendations-section">
+      <button class="recommendations-toggle" (click)="toggleDeviceRecommendations()">
+        📡 Device Recommendations
+        <span class="toggle-icon">{{ showDeviceRecommendations() ? '▼' : '▶' }}</span>
+      </button>
+
+      @if (showDeviceRecommendations() && deviceRecommendations().length > 0) {
+        <div class="recommendations-content">
+          <p class="recommendations-intro">
+            Based on the distance ({{ selectedConnection.distance.toFixed(2) }} km) and signal strength 
+            ({{ losAnalysis()?.signalStrength || 0 }}%), here are the recommended radio devices:
+          </p>
+
+          <div class="devices-grid">
+            @for (rec of deviceRecommendations(); track rec.device.id) {
+              <div class="device-card" [class]="getSuitabilityClass(rec.suitability)">
+                <div class="device-header">
+                  <div class="device-title">
+                    <span class="suitability-icon">{{ getSuitabilityIcon(rec.suitability) }}</span>
+                    <h4>{{ rec.device.name }}</h4>
+                  </div>
+                  <span class="device-type-badge" [class]="'type-' + rec.device.type">
+                    {{ rec.device.type }}
+                  </span>
+                </div>
+
+                <div class="device-specs">
+                  <div class="spec-row">
+                    <span class="spec-label">Frequency:</span>
+                    <span class="spec-value">{{ rec.device.frequency }}</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Max Range:</span>
+                    <span class="spec-value">{{ rec.device.maxRange }} km</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Power Output:</span>
+                    <span class="spec-value">{{ rec.device.powerOutput }}</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Sensitivity:</span>
+                    <span class="spec-value">{{ rec.device.sensitivity }}</span>
+                  </div>
+                </div>
+
+                <div class="device-description">
+                  <p>{{ rec.device.description }}</p>
+                </div>
+
+                <div class="recommendation-details">
+                  <div class="suitability-badge" [class]="getSuitabilityClass(rec.suitability)">
+                    {{ rec.suitability }}
+                  </div>
+                  <p class="reason">{{ rec.reason }}</p>
+                  <p class="performance"><strong>Expected:</strong> {{ rec.estimatedPerformance }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (showDeviceRecommendations() && deviceRecommendations().length === 0) {
+        <div class="recommendations-content">
+          <p class="no-recommendations">
+            ⚠️ No suitable devices found for this link configuration. 
+            Consider reducing distance or improving line of sight.
+          </p>
+        </div>
+      }
+    </div>
+
+  } @else {
+    <div class="no-selection">
+      <p>🗺️ Select a connection to view elevation profile</p>
+      <p class="hint">Click on a line between two points</p>
+    </div>
+  }
+</div>

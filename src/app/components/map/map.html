@@ -1,0 +1,173 @@
+<div class="map-container">
+  <!-- Point Naming Dialog -->
+  @if (showNamingDialog()) {
+    <div class="naming-dialog-overlay" (click)="cancelNamingDialog()">
+      <div class="naming-dialog" (click)="$event.stopPropagation()">
+        <div class="naming-dialog-header">
+          <h3>📍 Name This Point</h3>
+          <button class="close-btn" (click)="cancelNamingDialog()">✕</button>
+        </div>
+        <div class="naming-dialog-content">
+          <p class="hint">Enter a custom name or leave blank to use default</p>
+          <input 
+            type="text" 
+            [(ngModel)]="tempPointName"
+            [placeholder]="tempPointData?.defaultName || 'Point Name'"
+            class="name-input"
+            (keypress)="$event.key === 'Enter' ? confirmPointName() : null"
+            autofocus>
+          <p class="default-info">Default: <strong>{{ tempPointData?.defaultName }}</strong></p>
+        </div>
+        <div class="naming-dialog-footer">
+          <button class="btn-cancel" (click)="cancelNamingDialog()">Cancel</button>
+          <button class="btn-confirm" (click)="confirmPointName()">
+            {{ tempPointName.trim() ? 'Use Custom Name' : 'Use Default' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <div class="panel-header">
+      <h2>📡 Radio Link Planner</h2>
+      <button class="help-btn" (click)="showHelp = !showHelp" title="Help">
+        ❓
+      </button>
+    </div>
+    
+    <!-- Base Layer Controls -->
+    <div class="control-section">
+      <h3>Base Map</h3>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input 
+            type="radio" 
+            name="baseLayer" 
+            [checked]="layerVisibility.osm"
+            (change)="toggleBaseLayer('osm')">
+          <span class="radio-label">Street Map</span>
+        </label>
+        <label class="radio-option">
+          <input 
+            type="radio" 
+            name="baseLayer" 
+            [checked]="layerVisibility.satellite"
+            (change)="toggleBaseLayer('satellite')">
+          <span class="radio-label">Satellite</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Connect Mode -->
+    <div class="control-section">
+      <h3>Connect Mode</h3>
+      <button 
+        class="connect-mode-btn"
+        [class.active]="isConnectMode"
+        (click)="toggleConnectMode()">
+        @if (isConnectMode) {
+          <span class="icon">🔗</span>
+          <span class="text">Click Points to Connect</span>
+          <span class="badge">Active</span>
+        } @else {
+          <span class="icon">🔗</span>
+          <span class="text">Enable Connect Mode</span>
+        }
+      </button>
+      @if (isConnectMode) {
+        <p class="mode-hint">💡 Click on two points to create a connection</p>
+      }
+    </div>
+
+    <!-- Actions -->
+    <div class="control-section">
+      <h3>Actions</h3>
+      <div class="button-group vertical">
+        <button class="action-btn clear-btn" (click)="clearAll()">
+          🗑️ Clear All
+        </button>
+      </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="control-section stats-section">
+      <h3>Statistics</h3>
+      <div class="stat-grid">
+        <div class="mini-stat">
+          <div class="stat-value">{{ stats().totalPoints }}</div>
+          <div class="stat-label">Points</div>
+        </div>
+        <div class="mini-stat">
+          <div class="stat-value">{{ stats().totalConnections }}</div>
+          <div class="stat-label">Connections</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Help Modal -->
+  @if (showHelp) {
+    <div class="help-modal-overlay" (click)="showHelp = false">
+      <div class="help-modal" (click)="$event.stopPropagation()">
+        <div class="help-header">
+          <h3>📖 How to Use Radio Link Planner</h3>
+          <button class="close-help" (click)="showHelp = false">✕</button>
+        </div>
+        <div class="help-content">
+          <div class="help-section">
+            <h4>🎯 Getting Started</h4>
+            <ol>
+              <li><strong>Add Points:</strong> Click anywhere on the map to place tower locations</li>
+              <li><strong>Enable Connect Mode:</strong> Click the "Enable Connect Mode" button</li>
+              <li><strong>Create Link:</strong> Click first tower (it will pulse gold), then click second tower</li>
+              <li><strong>View Analysis:</strong> Click the connection line popup and select "View Profile"</li>
+              <li><strong>Adjust Heights:</strong> Use the Elevation Profile tab to modify tower heights</li>
+            </ol>
+          </div>
+          
+          <div class="help-section">
+            <h4>🎨 Signal Strength Color Coding</h4>
+            <div class="legend-grid">
+              <div class="legend-row">
+                <span class="color-indicator strong"></span>
+                <span><strong>Green (Strong):</strong> Signal > 70% - Excellent link quality</span>
+              </div>
+              <div class="legend-row">
+                <span class="color-indicator medium"></span>
+                <span><strong>Yellow (Medium):</strong> Signal 40-70% - Good for basic connectivity</span>
+              </div>
+              <div class="legend-row">
+                <span class="color-indicator weak"></span>
+                <span><strong>Red (Weak):</strong> Signal < 40% - May need amplification</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <h4>💡 Pro Tips</h4>
+            <ul>
+              <li>Longer distances result in weaker signals</li>
+              <li>Clear line-of-sight improves signal strength by up to 15%</li>
+              <li>Increase tower heights to overcome terrain obstacles</li>
+              <li>Use satellite view to identify physical obstructions</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Loading Indicator -->
+  @if (isLoadingElevation) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Loading elevation data...</p>
+    </div>
+  }
+</div>

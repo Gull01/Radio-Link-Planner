@@ -1,0 +1,120 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo-animation">
+        <div class="logo-circle">
+          <div class="signal-icon">📡</div>
+        </div>
+      </div>
+      <h1 class="app-title">Radio Link Planner</h1>
+      <p class="app-subtitle">Plan and analyze wireless communication links</p>
+    </div>
+
+    <div class="mode-toggle">
+      <button 
+        class="toggle-btn" 
+        [class.active]="isLoginMode()"
+        (click)="isLoginMode.set(true); clearErrors()">
+        Sign In
+      </button>
+      <button 
+        class="toggle-btn" 
+        [class.active]="!isLoginMode()"
+        (click)="isLoginMode.set(false); clearErrors()">
+        Sign Up
+      </button>
+    </div>
+
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      @if (!isLoginMode()) {
+        <div class="form-group" [@slideIn]>
+          <label for="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            [(ngModel)]="username"
+            name="username"
+            placeholder="Choose a username"
+            (blur)="validateUsername()"
+            [class.error]="usernameError()"
+            required>
+          @if (usernameError()) {
+            <span class="error-message">{{ usernameError() }}</span>
+          }
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="email">Email (any provider)</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="example@gmail.com, user@outlook.com, etc."
+          (blur)="validateEmail()"
+          [class.error]="emailError()"
+          autocomplete="email"
+          required>
+        @if (emailError()) {
+          <span class="error-message">{{ emailError() }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          (blur)="validatePassword()"
+          [class.error]="passwordError()"
+          required>
+        @if (passwordError()) {
+          <span class="error-message">{{ passwordError() }}</span>
+        }
+      </div>
+
+      @if (!isLoginMode()) {
+        <div class="form-group" [@slideIn]>
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+            placeholder="••••••••"
+            (blur)="validatePassword()"
+            [class.error]="passwordError()"
+            required>
+        </div>
+      }
+
+      <button 
+        type="submit" 
+        class="submit-btn"
+        [disabled]="isLoading()">
+        @if (isLoading()) {
+          <span class="spinner"></span>
+        } @else {
+          <span>{{ isLoginMode() ? 'Sign In' : 'Create Account' }}</span>
+        }
+        <span class="arrow">→</span>
+      </button>
+    </form>
+
+    @if (!isLoginMode()) {
+      <div class="password-requirements">
+        <p class="requirements-title">Password must contain:</p>
+        <ul>
+          <li>At least 6 characters</li>
+          <li>One uppercase letter</li>
+          <li>One lowercase letter</li>
+          <li>One number</li>
+        </ul>
+      </div>
+    }
+  </div>
+</div>
