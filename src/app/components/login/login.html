@@ -26,38 +26,19 @@
     </div>
 
     <form class="login-form" (ngSubmit)="onSubmit()">
-      @if (!isLoginMode()) {
-        <div class="form-group" [@slideIn]>
-          <label for="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            [(ngModel)]="username"
-            name="username"
-            placeholder="Choose a username"
-            (blur)="validateUsername()"
-            [class.error]="usernameError()"
-            required>
-          @if (usernameError()) {
-            <span class="error-message">{{ usernameError() }}</span>
-          }
-        </div>
-      }
-
       <div class="form-group">
-        <label for="email">Email (any provider)</label>
+        <label for="username">Username</label>
         <input
-          id="email"
-          type="email"
-          [(ngModel)]="email"
-          name="email"
-          placeholder="example@gmail.com, user@outlook.com, etc."
-          (blur)="validateEmail()"
-          [class.error]="emailError()"
-          autocomplete="email"
+          id="username"
+          type="text"
+          [(ngModel)]="username"
+          name="username"
+          [placeholder]="isLoginMode() ? 'Enter your username' : 'Choose a username'"
+          (blur)="validateUsername()"
+          [class.error]="usernameError()"
           required>
-        @if (emailError()) {
-          <span class="error-message">{{ emailError() }}</span>
+        @if (usernameError()) {
+          <span class="error-message">{{ usernameError() }}</span>
         }
       </div>
 

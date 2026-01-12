@@ -22,13 +22,11 @@ export class LoginComponent {
   isLoading = signal<boolean>(false);
   
   // Form fields
-  email = signal<string>('');
   password = signal<string>('');
   confirmPassword = signal<string>('');
   username = signal<string>('');
   
   // Validation messages
-  emailError = signal<string>('');
   passwordError = signal<string>('');
   usernameError = signal<string>('');
 
@@ -37,19 +35,7 @@ export class LoginComponent {
     this.clearErrors();
   }
 
-  validateEmail(): boolean {
-    const emailValue = this.email().trim();
-    if (!emailValue) {
-      this.emailError.set('Email is required');
-      return false;
-    }
-    if (!this.authService.isValidEmail(emailValue)) {
-      this.emailError.set('Please enter a valid email address (any provider accepted)');
-      return false;
-    }
-    this.emailError.set('');
-    return true;
-  }
+
 
   validatePassword(): boolean {
     const passwordValue = this.password();
@@ -76,14 +62,12 @@ export class LoginComponent {
   }
 
   validateUsername(): boolean {
-    if (this.isLoginMode()) return true;
-    
     const usernameValue = this.username().trim();
     if (!usernameValue) {
       this.usernameError.set('Username is required');
       return false;
     }
-    if (usernameValue.length < 3) {
+    if (!this.isLoginMode() && usernameValue.length < 3) {
       this.usernameError.set('Username must be at least 3 characters');
       return false;
     }
@@ -92,7 +76,6 @@ export class LoginComponent {
   }
 
   clearErrors(): void {
-    this.emailError.set('');
     this.passwordError.set('');
     this.usernameError.set('');
   }
@@ -100,11 +83,10 @@ export class LoginComponent {
   async onSubmit(): Promise<void> {
     this.clearErrors();
     
-    const isEmailValid = this.validateEmail();
     const isPasswordValid = this.validatePassword();
     const isUsernameValid = this.validateUsername();
     
-    if (!isEmailValid || !isPasswordValid || !isUsernameValid) {
+    if (!isUsernameValid || !isPasswordValid) {
       return;
     }
 
@@ -113,7 +95,7 @@ export class LoginComponent {
     if (this.isLoginMode()) {
       // Login
       const credentials: LoginCredentials = {
-        email: this.email().trim(),
+        email: this.username().trim(), // Using username as email field
         password: this.password()
       };
 
@@ -136,7 +118,7 @@ export class LoginComponent {
       // Register
       const registerData: RegisterData = {
         username: this.username().trim(),
-        email: this.email().trim(),
+        email: this.username().trim() + '@localuser.com', // Auto-generate email from username
         password: this.password()
       };
 

@@ -21,7 +21,10 @@ export class ChatService {
   
   private conversationHistory: ChatMessage[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Load API key from localStorage if available
+    this.apiKey = localStorage.getItem('gemini_api_key') || '';
+  }
 
   setApiKey(key: string): void {
     this.apiKey = key;

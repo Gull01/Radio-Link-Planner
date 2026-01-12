@@ -367,7 +367,7 @@ export class MapComponent implements OnInit, OnDestroy {
     const color = this.gisService.getSignalColor(connection.signalStrength);
     const category = this.gisService.getSignalCategory(connection.signalStrength);
 
-    // Create polyline with enhanced styling
+    // Create polyline with enhanced styling for better stability
     const polyline = L.polyline(
       [
         [fromPOI.latitude, fromPOI.longitude],
@@ -375,10 +375,12 @@ export class MapComponent implements OnInit, OnDestroy {
       ],
       {
         color: color,
-        weight: 6,
-        opacity: 0.85,
-        dashArray: connection.lineOfSight ? '' : '12, 8',
-        className: 'connection-line'
+        weight: 4,
+        opacity: 0.9,
+        dashArray: connection.lineOfSight ? '' : '10, 5',
+        className: 'connection-line',
+        smoothFactor: 1,
+        renderer: L.canvas()
       }
     ).addTo(this.map);
 
@@ -949,9 +951,11 @@ export class MapComponent implements OnInit, OnDestroy {
       [[from.latitude, from.longitude], [to.latitude, to.longitude]],
       {
         color: connectionObj.lineOfSight ? '#4CAF50' : '#FF5252',
-        weight: 3,
-        opacity: 0.8,
-        dashArray: connectionObj.lineOfSight ? undefined : '10, 10'
+        weight: 4,
+        opacity: 0.9,
+        dashArray: connectionObj.lineOfSight ? undefined : '10, 5',
+        smoothFactor: 1,
+        renderer: L.canvas()
       }
     ).addTo(this.map);
 
