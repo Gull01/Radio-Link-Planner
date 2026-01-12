@@ -16,8 +16,8 @@ export interface ChatMessage {
 export class ChatService {
   private readonly GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
   
-  // Pre-configured API key (Gemini 2.5 Flash)
-  private apiKey = 'AIzaSyA_Dr6FBxD7LnL7pPLo3-8YU4TCTEBnQK0';
+  // API key stored in localStorage (set via settings dialog)
+  private apiKey = '';
   
   private conversationHistory: ChatMessage[] = [];
 

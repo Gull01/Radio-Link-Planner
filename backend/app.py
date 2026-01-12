@@ -30,7 +30,9 @@ app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')  # Your email pass
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME'))
 
 # Weather API configuration
-WEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY', '373a966a30cdc66cc51bbdbb57a904d7')
+WEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY')
+if not WEATHER_API_KEY:
+    raise ValueError("OPENWEATHER_API_KEY must be set in .env file")
 WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather'
 
 CORS(app)
@@ -95,7 +97,7 @@ def fetch_weather_for_poi(latitude, longitude):
 # Authentication endpoints
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    """Register a new user - Email verification bypassed for testing"""
+    """Register a new user - Instant registration without email verification"""
     try:
         data = request.json
         username = data.get('username', '').strip()
@@ -119,15 +121,15 @@ def register():
         if User.query.filter_by(email=email).first():
             return jsonify({'success': False, 'message': 'Email already registered'}), 400
 
-        # Create new user - Auto-verify for testing (no email required)
+        # Create new user - Instant registration (email saved for future password reset)
         user = User(username=username, email=email)
         user.set_password(password)
-        user.is_verified = True  # Auto-verify without email
+        user.is_verified = True  # Auto-verified, no email confirmation needed
         
         db.session.add(user)
         db.session.commit()
 
-        # Generate JWT token
+        # Generate JWT token for instant login
         token = jwt.encode({
             'user_id': user.id,
             'exp': datetime.utcnow() + timedelta(days=30)
@@ -240,7 +242,7 @@ def resend_code():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    """Login user - Email verification bypassed for testing"""
+    """Login user"""
     try:
         data = request.json
         email = data.get('email', '').strip().lower()
@@ -254,11 +256,6 @@ def login():
 
         if not user or not user.check_password(password):
             return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
-
-        # Auto-verify if not verified (for testing without email)
-        if not user.is_verified:
-            user.is_verified = True
-            db.session.commit()
 
         # Generate JWT token
         token = jwt.encode({

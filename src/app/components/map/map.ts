@@ -40,6 +40,9 @@ export class MapComponent implements OnInit, OnDestroy {
   showNamingDialog = signal<boolean>(false);
   tempPointName = '';
   tempPointData: { lat: number; lng: number; defaultName: string } | null = null;
+  searchQuery = '';
+  isSearching = false;
+  searchMarker: L.Marker | null = null;
   
   connectionSelected = output<Connection | null>();
   
@@ -72,10 +75,10 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private initializeMap(): void {
-    // Initialize map centered on a default location
+    // Initialize map centered on Islamabad/Rawalpindi
     this.map = L.map('map', {
-      center: [40.7128, -74.0060], // New York City
-      zoom: 13
+      center: [33.6844, 73.0479], // Islamabad, Pakistan
+      zoom: 12
     });
 
     // Create custom marker icons
@@ -1001,6 +1004,55 @@ export class MapComponent implements OnInit, OnDestroy {
       if (confirmed) {
         await this.clearAll(true); // Skip double confirmation
       }
+    }
+  }
+
+  async searchCity(): Promise<void> {
+    const query = this.searchQuery.trim();
+    if (!query) return;
+
+    this.isSearching = true;
+    
+    try {
+      // Use Nominatim API for geocoding
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`
+      );
+      
+      const results = await response.json();
+      
+      if (results && results.length > 0) {
+        const location = results[0];
+        const lat = parseFloat(location.lat);
+        const lon = parseFloat(location.lon);
+        
+        // Move map to location
+        this.map.setView([lat, lon], 13);
+        
+        // Remove previous search marker if exists
+        if (this.searchMarker) {
+          this.map.removeLayer(this.searchMarker);
+        }
+        
+        // Add temporary marker
+        this.searchMarker = L.marker([lat, lon], {
+          icon: L.divIcon({
+            className: 'search-marker',
+            html: '<div style="background: #ff4444; color: white; padding: 5px 10px; border-radius: 20px; font-size: 12px; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">📍 ' + location.display_name.split(',')[0] + '</div>',
+            iconSize: [150, 40],
+            iconAnchor: [75, 40]
+          })
+        }).addTo(this.map);
+        
+        this.notificationService.success(`Found: ${location.display_name}`);
+      } else {
+        this.notificationService.error('City not found. Try a different search term.');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      this.notificationService.error('Search failed. Please try again.');
+    } finally {
+      this.isSearching = false;
     }
   }
 }

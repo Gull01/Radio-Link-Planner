@@ -3,9 +3,14 @@
 
 import requests
 import sys
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 BACKEND_URL = "http://localhost:5000"
-WEATHER_API_KEY = "373a966a30cdc66cc51bbdbb57a904d7"  # Get from https://openweathermap.org/api
+WEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY')  # Loaded from .env file
 
 def test_weather_integration():
     """Test weather fetching without n8n"""

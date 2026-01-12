@@ -28,6 +28,22 @@
     </div>
   }
 
+  <!-- City Search Bar -->
+  <div class="search-bar">
+    <input 
+      type="text" 
+      [(ngModel)]="searchQuery"
+      (keypress)="$event.key === 'Enter' ? searchCity() : null"
+      placeholder="🔍 Search for a city..."
+      class="search-input">
+    <button 
+      class="search-btn" 
+      (click)="searchCity()"
+      [disabled]="isSearching || !searchQuery.trim()">
+      {{ isSearching ? '⏳' : '🔍' }}
+    </button>
+  </div>
+
   <!-- Control Panel -->
   <div class="control-panel">
     <div class="panel-header">

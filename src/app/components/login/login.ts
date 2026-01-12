@@ -124,17 +124,6 @@ export class LoginComponent {
           if (response.success) {
             this.notificationService.success(`Welcome back, ${response.user?.username}!`);
             this.onLoginSuccess.emit();
-          } else if (response.requires_verification && response.user_id) {
-            // Redirect to verification page
-            this.notificationService.show(response.message, 'info');
-            sessionStorage.setItem('pending_verification_user_id', response.user_id.toString());
-            sessionStorage.setItem('pending_verification_email', this.email().trim());
-            this.router.navigate(['/verify-email'], {
-              state: { 
-                userId: response.user_id,
-                email: this.email().trim()
-              }
-            });
           } else {
             this.notificationService.error(response.message);
           }
@@ -155,19 +144,8 @@ export class LoginComponent {
         next: (response) => {
           this.isLoading.set(false);
           
-          if (response.success && response.requires_verification && response.user_id) {
-            // Redirect to verification page
-            this.notificationService.success('Registration successful! Please check your email for verification code.');
-            sessionStorage.setItem('pending_verification_user_id', response.user_id.toString());
-            sessionStorage.setItem('pending_verification_email', response.email || this.email().trim());
-            this.router.navigate(['/verify-email'], {
-              state: { 
-                userId: response.user_id,
-                email: response.email || this.email().trim()
-              }
-            });
-          } else if (response.success) {
-            // Old flow fallback (shouldn't happen now)
+          if (response.success) {
+            // Instant registration - no email verification needed
             this.notificationService.success(`Welcome, ${response.user?.username}! Your account has been created.`);
             this.onLoginSuccess.emit();
           } else {
