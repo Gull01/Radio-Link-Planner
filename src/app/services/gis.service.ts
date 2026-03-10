@@ -5,10 +5,10 @@ import { POI, Connection } from '../models/poi.model';
   providedIn: 'root'
 })
 export class GisService {
-  // Maximum signal strength
-  private readonly MAX_SIGNAL_STRENGTH = 100;
-  // Signal attenuation factor (signal loss per km)
-  private readonly ATTENUATION_FACTOR = 5;
+  // Default frequency in MHz (2.4 GHz)
+  private readonly DEFAULT_FREQUENCY = 2400;
+  // Fallback fallback distance to avoid log(0)
+  private readonly MIN_DISTANCE_KM = 0.001;
 
   constructor() { }
 
@@ -37,27 +37,43 @@ export class GisService {
   }
 
   /**
-   * Calculate signal strength based on distance and line of sight
-   * Formula: Strength = MAX_SIGNAL_STRENGTH - (Distance * ATTENUATION_FACTOR)
-   * Bonus for clear line of sight
+   * Calculate signal strength based on ITU-R P.525 Free-Space Path Loss (FSPL) model
+   * Formula: FSPL(dB) = 20*log10(d) + 20*log10(f) + 32.44
    * @param distance Distance in kilometers
    * @param hasLineOfSight Whether line of sight is clear
    * @param clearance Minimum clearance in meters
-   * @returns Signal strength (0-100)
+   * @returns Signal strength Quality (0-100 percentage)
    */
   calculateSignalStrength(distance: number, hasLineOfSight: boolean = true, clearance: number = 0): number {
-    let strength = this.MAX_SIGNAL_STRENGTH - (distance * this.ATTENUATION_FACTOR);
+    const d = Math.max(this.MIN_DISTANCE_KM, distance);
     
-    // Apply line of sight bonus/penalty
-    if (hasLineOfSight) {
-      // Bonus for clear line of sight (up to +15%)
-      const losBonus = Math.min(15, clearance);
-      strength += losBonus;
-    } else {
-      // Penalty for blocked line of sight
-      const losPenalty = Math.abs(clearance) * 2;
-      strength -= Math.min(30, losPenalty);
+    // Free-Space Path Loss (dB)
+    const fspl = 20 * Math.log10(d) + 20 * Math.log10(this.DEFAULT_FREQUENCY) + 32.44;
+    
+    // Standard Access Point / Radio Link hardware assumptions
+    const txPower = 20; // 20 dBm (100mW)
+    const txGain = 15;  // 15 dBi directional antenna
+    const rxGain = 15;  // 15 dBi directional antenna
+    
+    // Received Signal Power (dBm)
+    let rxPower = txPower + txGain + rxGain - fspl;
+    
+    // Apply terrain diffraction/obstacle loss if Line of Sight is blocked
+    if (!hasLineOfSight && clearance < 0) {
+      // Knife-edge diffraction approximation: subtract dB based on blockage severity
+      const blockageLoss = Math.abs(clearance) * 0.5; // 0.5 dB loss per meter of blockage
+      rxPower -= Math.min(40, blockageLoss); // Cap maximum penalty at 40 dB
+    } else if (hasLineOfSight && clearance > 0) {
+      // Slight bonus for excellent Fresnel zone clearance
+      rxPower += Math.min(3, clearance * 0.1); 
     }
+
+    // Map Absolute Rx Power (dBm) to a reliable 0-100% Quality Metric
+    // Assuming -50 dBm is Excellent (100%) and -90 dBm is No Signal (0%)
+    const maxRx = -50;
+    const minRx = -90;
+    
+    let strength = ((rxPower - minRx) / (maxRx - minRx)) * 100;
     
     return Math.max(0, Math.min(100, Math.round(strength)));
   }
