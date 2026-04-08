@@ -1,17 +1,17 @@
-# 📡 Radio Link Planner
+# Radio Link Planner
 
-## 🚀 Overview
+## Overview
 A Tool to test link between radio internet devices
 
-## ✨ Key Features
+## Key Features
 - **Link Analysis**: Tests and validates line-of-sight communication links.
 - **Signal Performance**: Highlights optimal routing mechanisms.
 - **Tool Utility**: Vital for telecom infrastructure planning.
 
-## 🛠️ Built With
+## Built With
 - **Tech Stack:** Python, Telecommunication Modems/APIs
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 Ensure your local environment is configured securely (e.g. Python 3.8+ or necessary GIS software context).
@@ -27,7 +27,7 @@ Ensure your local environment is configured securely (e.g. Python 3.8+ or necess
    ```
 3. Set up your environment and dependencies as needed.
 
-## 📄 License
+## License
 This project is licensed under the MIT License - see below for details.
 
 ```text
