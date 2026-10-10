@@ -1,0 +1,77 @@
+<div class="project-manager">
+  @if (showDialog()) {
+    <div class="dialog-overlay" (click)="closeDialog()">
+      <div class="dialog" (click)="$event.stopPropagation()">
+        <!-- New Project Dialog -->
+        @if (dialogMode() === 'new') {
+          <div class="dialog-header">
+            <h3>Create New Project</h3>
+            <button class="close-btn" (click)="closeDialog()">✕</button>
+          </div>
+          <div class="dialog-content">
+            <div class="form-group">
+              <label>Project Name *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="newProjectName"
+                placeholder="e.g., City Network Expansion"
+                class="form-input"
+                autofocus>
+            </div>
+            <div class="form-group">
+              <label>Description (Optional)</label>
+              <textarea 
+                [(ngModel)]="newProjectDescription"
+                placeholder="Brief description of the project..."
+                class="form-textarea"
+                rows="3"></textarea>
+            </div>
+          </div>
+          <div class="dialog-footer">
+            <button class="btn btn-secondary" (click)="closeDialog()">Cancel</button>
+            <button class="btn btn-primary" (click)="createNewProject()">Create Project</button>
+          </div>
+        }
+
+        <!-- Load Project Dialog -->
+        @if (dialogMode() === 'load' || dialogMode() === 'list') {
+          <div class="dialog-header">
+            <h3>Load Project</h3>
+            <button class="close-btn" (click)="closeDialog()">✕</button>
+          </div>
+          <div class="dialog-content">
+            @if (projects().length === 0) {
+              <div class="empty-state">
+                <p>No saved projects found</p>
+                <button class="btn btn-primary" (click)="dialogMode.set('new')">Create Your First Project</button>
+              </div>
+            } @else {
+              <div class="projects-list">
+                @for (project of projects(); track project.id) {
+                  <div class="project-item" (click)="loadProject(project)">
+                    <div class="project-info">
+                      <h4>{{ project.name }}</h4>
+                      <p class="project-description">{{ project.description || 'No description' }}</p>
+                      <div class="project-meta">
+                        <span>{{ project.poi_count }} towers</span>
+                        <span>{{ project.connection_count }} links</span>
+                        <span class="project-date">{{ project.updated_at | date:'short' }}</span>
+                      </div>
+                    </div>
+                    <button class="delete-btn" (click)="deleteProject(project, $event)" title="Delete">
+                      🗑️
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div class="dialog-footer">
+            <button class="btn btn-secondary" (click)="closeDialog()">Cancel</button>
+            <button class="btn btn-primary" (click)="dialogMode.set('new')">New Project</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

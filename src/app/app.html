@@ -1,0 +1,15 @@
+@if (showWelcome()) {
+  <app-welcome (onStart)="onWelcomeStart()"></app-welcome>
+}
+
+@if (showLogin()) {
+  <app-login (onLoginSuccess)="onLoginSuccess()"></app-login>
+}
+
+@if (appStarted()) {
+  <app-tabs></app-tabs>
+  <router-outlet />
+}
+
+<app-notification></app-notification>
+<app-confirm-dialog></app-confirm-dialog>

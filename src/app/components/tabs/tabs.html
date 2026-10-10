@@ -1,0 +1,123 @@
+@if (showWelcome()) {
+  <app-welcome (onStart)="startApp()"></app-welcome>
+}
+
+<!-- Project Manager Component -->
+<app-project-manager 
+  #projectManager
+  (onNewProject)="onProjectCreated($event)"
+  (onProjectLoad)="onProjectLoaded($event)">
+</app-project-manager>
+
+<div class="tabs-container">
+  <!-- Project Bar -->
+  @if (!showWelcome()) {
+    <div class="project-bar">
+      <div class="project-info">
+        @if (currentProject()) {
+          <span class="project-icon">📁</span>
+          <span class="project-name">{{ currentProject()!.name }}</span>
+        } @else {
+          <span class="project-icon">📂</span>
+          <span class="no-project">No project loaded</span>
+        }
+      </div>
+      <div class="project-actions">
+        <button class="action-btn" (click)="createNewProject()" title="New Project">
+          ➕ New
+        </button>
+        <button class="action-btn" (click)="openProjectDialog()" title="Open Project">
+          📂 Open
+        </button>
+        @if (currentProject()) {
+          <button class="action-btn primary" (click)="saveCurrentProject()" title="Save Project">
+            💾 Save
+          </button>
+        }
+        
+        <!-- User Menu -->
+        <div class="user-menu-container">
+          <button class="user-btn" (click)="toggleUserMenu()" title="User Menu">
+            <span class="user-icon">👤</span>
+            <span class="username">{{ authService.currentUser()?.username || 'User' }}</span>
+          </button>
+          
+          @if (showUserMenu()) {
+            <div class="user-dropdown">
+              <div class="user-info">
+                <div class="user-avatar">{{ (authService.currentUser()?.username || 'U').charAt(0).toUpperCase() }}</div>
+                <div class="user-details">
+                  <div class="user-name">{{ authService.currentUser()?.username }}</div>
+                  <div class="user-email">{{ authService.currentUser()?.email }}</div>
+                </div>
+              </div>
+              <div class="menu-divider"></div>
+              <button class="menu-item logout-btn" (click)="logout()">
+                <span class="menu-icon">🚪</span>
+                Logout
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'map'"
+      (click)="switchTab('map')">
+      <span class="tab-icon">🗺️</span>
+      <span class="tab-label">Map View</span>
+    </button>
+    <button 
+      class="tab-button"
+      [class.active]="activeTab() === 'profile'"
+      [class.disabled]="!selectedConnection()"
+      (click)="switchTab('profile')"
+      [disabled]="!selectedConnection()">
+      <span class="tab-icon">📈</span>
+      <span class="tab-label">Elevation Profile</span>
+      @if (selectedConnection()) {
+        <span class="connection-badge">
+          {{ selectedConnection()!.fromPOI.name }} ↔ {{ selectedConnection()!.toPOI.name }}
+        </span>
+      }
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <div class="tab-panel" [class.hidden]="activeTab() !== 'map'">
+      <app-map #mapComp (connectionSelected)="onConnectionSelected($event)"></app-map>
+    </div>
+    <div class="tab-panel profile-panel-wrapper" [class.hidden]="activeTab() !== 'profile'">
+      @if (selectedConnection() && activeTab() === 'profile') {
+        <app-profile [selectedConnection]="selectedConnection()!"></app-profile>
+      } @else {
+        <div class="no-selection-message">
+          <div class="empty-state">
+            <span class="empty-icon">📊</span>
+            <h2>No Connection Selected</h2>
+            <p>Select a connection from the map to view its elevation profile</p>
+            <button class="primary-button" (click)="switchTab('map')">
+              Go to Map View
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  
+  <!-- AI Chat Assistant -->
+  @if (!showWelcome()) {
+    <app-chat 
+      [pois]="pois()"
+      [connections]="connections()"
+      [stats]="stats()"
+      [selectedConnection]="selectedConnection()">
+    </app-chat>
+  }
+</div>

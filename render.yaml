@@ -1,0 +1,26 @@
+services:
+  # Backend Flask API
+  - type: web
+    name: radio-link-planner-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  # Frontend Angular SPA
+  - type: web
+    name: radio-link-planner-web
+    runtime: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist/spatial-analysis-tool/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

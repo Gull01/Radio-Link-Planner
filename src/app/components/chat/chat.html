@@ -1,0 +1,146 @@
+<div class="chat-widget">
+  <!-- Floating Chat Button -->
+  @if (!isOpen()) {
+    <button class="chat-fab" (click)="toggleChat()" title="Chat with AI Assistant">
+      <span class="fab-icon">💬</span>
+      <span class="fab-label">Ask AI</span>
+    </button>
+  }
+
+  <!-- Chat Panel -->
+  @if (isOpen()) {
+    <div class="chat-panel">
+      <!-- Header -->
+      <div class="chat-header">
+        <div class="header-content">
+          <span class="header-icon">🤖</span>
+          <div class="header-text">
+            <h3>Radio Planning Assistant</h3>
+            <span class="status-indicator">
+              @if (chatService.hasApiKey()) {
+                <span class="status-dot online"></span>
+                <span>Online</span>
+              } @else {
+                <span class="status-dot offline"></span>
+                <span>Setup Required</span>
+              }
+            </span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" (click)="toggleSettings()" title="Settings">
+            ⚙️
+          </button>
+          <button class="icon-btn" (click)="clearChat()" title="Clear Chat">
+            🗑️
+          </button>
+          <button class="icon-btn" (click)="toggleChat()" title="Close">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings Panel -->
+      @if (showSettings()) {
+        <div class="settings-panel">
+          <h4>⚙️ API Configuration</h4>
+          <p class="settings-info">
+            Get your free API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
+          </p>
+          <div class="input-group">
+            <label>Google Gemini API Key:</label>
+            <input 
+              type="password" 
+              [(ngModel)]="apiKey" 
+              placeholder="Enter your API key"
+              class="api-key-input"
+            />
+          </div>
+          <div class="settings-actions">
+            <button class="btn-primary" (click)="saveApiKey()">Save Key</button>
+            <button class="btn-secondary" (click)="toggleSettings()">Cancel</button>
+          </div>
+        </div>
+      }
+
+      <!-- Messages -->
+      <div class="chat-messages">
+        @if (messages().length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">🤖</div>
+            <h4>Radio Planning Assistant</h4>
+            <p>Ask me anything about RF links, signal optimization, or device recommendations!</p>
+          </div>
+        }
+
+        @for (message of messages(); track message.id) {
+          <div class="message" [class.user-message]="message.role === 'user'" [class.assistant-message]="message.role === 'assistant'">
+            <div class="message-avatar">
+              {{ message.role === 'user' ? '👤' : '🤖' }}
+            </div>
+            <div class="message-content">
+              <div class="message-text">{{ message.content }}</div>
+              <div class="message-time">{{ message.timestamp | date:'short' }}</div>
+            </div>
+          </div>
+        }
+
+        @if (isLoading()) {
+          <div class="message assistant-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Suggested Questions -->
+      @if (messages().length <= 1 && !isLoading()) {
+        <div class="suggested-questions">
+          <p class="suggestions-label">💡 Try asking:</p>
+          <div class="suggestions-grid">
+            @for (question of suggestedQuestions; track question) {
+              <button class="suggestion-chip" (click)="askSuggested(question)">
+                {{ question }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Input Area -->
+      <div class="chat-input-area">
+        @if (!chatService.hasApiKey()) {
+          <div class="setup-notice">
+            ⚠️ Please set your API key in settings to start chatting
+          </div>
+        }
+        <div class="input-container">
+          <textarea 
+            class="chat-input"
+            [(ngModel)]="userInput"
+            (keypress)="onKeyPress($event)"
+            placeholder="Ask about RF planning, devices, or signal optimization..."
+            rows="1"
+            [disabled]="!chatService.hasApiKey() || isLoading()"
+          ></textarea>
+          <button 
+            class="send-btn" 
+            (click)="sendMessage()"
+            [disabled]="!userInput().trim() || !chatService.hasApiKey() || isLoading()">
+            @if (isLoading()) {
+              <span class="spinner-mini"></span>
+            } @else {
+              ➤
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
