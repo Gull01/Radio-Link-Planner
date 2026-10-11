@@ -17,7 +17,9 @@ load_dotenv()
 app = Flask(__name__)
 
 # Database configuration - supports DATABASE_URL (e.g., Neon/Supabase PostgreSQL) or SQLite fallback
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///radio_link_planner.db')
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+default_db = f"sqlite:///{os.path.join(BASE_DIR, 'radio_link_planner.db')}"
+database_url = os.environ.get('DATABASE_URL', default_db)
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
