@@ -40,7 +40,7 @@ export class ChatService {
   }
 
   hasApiKey(): boolean {
-    return !!this.getApiKey();
+    return true;
   }
 
   getConversationHistory(): ChatMessage[] {
@@ -118,8 +118,12 @@ export class ChatService {
 
     console.log('Sending request to Gemini API:', requestBody);
 
+    const requestUrl = this.apiKey
+      ? `${this.GEMINI_API_URL}?key=${this.apiKey}`
+      : `${environment.apiUrl}/chat`;
+
     return this.http.post<any>(
-      `${this.GEMINI_API_URL}?key=${this.apiKey}`,
+      requestUrl,
       requestBody
     ).pipe(
       map(response => {

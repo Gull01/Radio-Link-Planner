@@ -479,6 +479,36 @@ def health_check():
     """Health check endpoint"""
     return jsonify({'status': 'ok', 'message': 'Radio Link Planner API is running'})
 
+@app.route('/api/chat', methods=['POST'])
+def proxy_chat():
+    """Proxy chat requests to Google Gemini securely without exposing the API key to users"""
+    try:
+        import urllib.request
+        import json
+
+        data = request.json or {}
+        gemini_key = os.environ.get('GEMINI_API_KEY')
+        if not gemini_key:
+            return jsonify({'error': 'Gemini API key is not configured on server'}), 500
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(data).encode('utf-8'),
+            headers={'Content-Type': 'application/json'}
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode('utf-8'))
+            return jsonify(result), resp.status
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        try:
+            return jsonify(json.loads(error_body)), e.code
+        except Exception:
+            return jsonify({'error': error_body}), e.code
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
