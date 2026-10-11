@@ -217,20 +217,27 @@ def resend_code():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    """Login user"""
+    """Login user by username or email"""
     try:
+        from sqlalchemy import func, or_
         data = request.json
-        email = data.get('email', '').strip().lower()
+        identifier = data.get('email', '').strip().lower()
         password = data.get('password', '')
 
-        if not email or not password:
-            return jsonify({'success': False, 'message': 'Email and password are required'}), 400
+        if not identifier or not password:
+            return jsonify({'success': False, 'message': 'Username/email and password are required'}), 400
 
-        # Find user by email
-        user = User.query.filter_by(email=email).first()
+        # Find user by email, username, or email alias
+        user = User.query.filter(
+            or_(
+                func.lower(User.email) == identifier,
+                func.lower(User.username) == identifier,
+                func.lower(User.email) == f"{identifier}@localuser.com"
+            )
+        ).first()
 
         if not user or not user.check_password(password):
-            return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
+            return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
 
         # Generate JWT token
         token = jwt.encode({

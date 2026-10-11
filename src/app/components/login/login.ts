@@ -94,8 +94,9 @@ export class LoginComponent {
 
     if (this.isLoginMode()) {
       // Login
+      const inputVal = this.username().trim();
       const credentials: LoginCredentials = {
-        email: this.username().trim(), // Using username as email field
+        email: inputVal,
         password: this.password()
       };
 
@@ -116,9 +117,10 @@ export class LoginComponent {
       });
     } else {
       // Register
+      const inputVal = this.username().trim();
       const registerData: RegisterData = {
-        username: this.username().trim(),
-        email: this.username().trim() + '@localuser.com', // Auto-generate email from username
+        username: inputVal,
+        email: inputVal.includes('@') ? inputVal.toLowerCase() : `${inputVal.toLowerCase()}@localuser.com`,
         password: this.password()
       };
 
