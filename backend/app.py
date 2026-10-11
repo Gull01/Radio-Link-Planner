@@ -220,19 +220,22 @@ def login():
     """Login user by username or email"""
     try:
         from sqlalchemy import func, or_
-        data = request.json
-        identifier = data.get('email', '').strip().lower()
+        identifier = data.get('email') or data.get('username') or ''
+        identifier = identifier.strip().lower()
         password = data.get('password', '')
 
         if not identifier or not password:
             return jsonify({'success': False, 'message': 'Username/email and password are required'}), 400
+
+        clean_username = identifier.replace('@localuser.com', '')
 
         # Find user by email, username, or email alias
         user = User.query.filter(
             or_(
                 func.lower(User.email) == identifier,
                 func.lower(User.username) == identifier,
-                func.lower(User.email) == f"{identifier}@localuser.com"
+                func.lower(User.username) == clean_username,
+                func.lower(User.email) == f"{clean_username}@localuser.com"
             )
         ).first()
 

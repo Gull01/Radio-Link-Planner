@@ -95,19 +95,37 @@ export class LoginComponent {
     if (this.isLoginMode()) {
       // Login
       const inputVal = this.username().trim();
+      const loginEmail = inputVal.includes('@') ? inputVal.toLowerCase() : `${inputVal.toLowerCase()}@localuser.com`;
       const credentials: LoginCredentials = {
-        email: inputVal,
+        email: loginEmail,
         password: this.password()
       };
 
       this.authService.login(credentials).subscribe({
         next: (response) => {
-          this.isLoading.set(false);
-          
           if (response.success) {
+            this.isLoading.set(false);
             this.notificationService.success(`Welcome back, ${response.user?.username}!`);
             this.onLoginSuccess.emit();
+          } else if (!inputVal.includes('@')) {
+            // If alias failed, try direct username as fallback
+            this.authService.login({ email: inputVal, password: this.password() }).subscribe({
+              next: (retryResp) => {
+                this.isLoading.set(false);
+                if (retryResp.success) {
+                  this.notificationService.success(`Welcome back, ${retryResp.user?.username}!`);
+                  this.onLoginSuccess.emit();
+                } else {
+                  this.notificationService.error(retryResp.message);
+                }
+              },
+              error: () => {
+                this.isLoading.set(false);
+                this.notificationService.error(response.message);
+              }
+            });
           } else {
+            this.isLoading.set(false);
             this.notificationService.error(response.message);
           }
         },
