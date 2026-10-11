@@ -407,13 +407,43 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .project-bar {
+    padding: 8px 12px;
+  }
+
+  .project-info {
+    font-size: 13px;
+    max-width: 140px;
+  }
+
+  .project-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100px;
+    display: inline-block;
+  }
+
+  .project-actions {
+    gap: 6px;
+  }
+
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .user-btn {
+    padding: 6px 10px;
+  }
+
   .tab-button {
-    padding: 12px 16px;
-    font-size: 14px;
+    padding: 10px 14px;
+    font-size: 13px;
   }
 
   .tab-icon {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .connection-badge {
@@ -422,5 +452,31 @@
   
   .username {
     display: none;
+  }
+}
+
+@media (max-width: 440px) {
+  .project-info {
+    max-width: 90px;
+    font-size: 12px;
+  }
+
+  .project-name {
+    max-width: 60px;
+  }
+
+  .project-actions {
+    gap: 4px;
+  }
+
+  .action-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .tab-button {
+    padding: 8px 10px;
+    font-size: 12px;
+    gap: 6px;
   }
 }

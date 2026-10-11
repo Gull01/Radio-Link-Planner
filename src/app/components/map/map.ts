@@ -36,6 +36,7 @@ export class MapComponent implements OnInit, OnDestroy {
   isLoadingElevation = false;
   showHelp = false;
   isExportingPdf = signal<boolean>(false);
+  isPanelCollapsed = signal<boolean>(false);
   currentProject: ProjectData | null = null;
   showNamingDialog = signal<boolean>(false);
   tempPointName = '';
@@ -45,6 +46,10 @@ export class MapComponent implements OnInit, OnDestroy {
   searchMarker: L.Marker | null = null;
   
   connectionSelected = output<Connection | null>();
+  
+  togglePanelCollapse(): void {
+    this.isPanelCollapsed.update(v => !v);
+  }
   
   // Layer visibility flags
   layerVisibility = {
@@ -63,6 +68,9 @@ export class MapComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.isPanelCollapsed.set(true);
+    }
     this.initializeMap();
     this.setupBaseLayers();
     this.setupMapClickHandler();
@@ -134,6 +142,11 @@ export class MapComponent implements OnInit, OnDestroy {
 
   private setupMapClickHandler(): void {
     this.map.on('click', (e: L.LeafletMouseEvent) => {
+      // Auto-collapse control panel on mobile when interacting with map
+      if (typeof window !== 'undefined' && window.innerWidth <= 768 && !this.isPanelCollapsed()) {
+        this.isPanelCollapsed.set(true);
+      }
+      
       if (this.isConnectMode && this.selectedPOI) {
         // In connect mode with a selected POI - do nothing (click on another marker to connect)
         return;

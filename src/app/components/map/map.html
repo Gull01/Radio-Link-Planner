@@ -46,83 +46,91 @@
   </div>
 
   <!-- Control Panel -->
-  <div class="control-panel">
-    <div class="panel-header">
-      <h2>📡 Radio Link Planner</h2>
-      <button class="help-btn" (click)="showHelp = !showHelp" title="Help">
+  <div class="control-panel" [class.collapsed]="isPanelCollapsed()">
+    <div class="panel-header" (click)="togglePanelCollapse()">
+      <div class="panel-title-area">
+        <h2>📡 Controls</h2>
+        <button class="collapse-toggle-btn" (click)="togglePanelCollapse(); $event.stopPropagation()" [title]="isPanelCollapsed() ? 'Expand Controls' : 'Collapse Controls'">
+          {{ isPanelCollapsed() ? '▼' : '▲' }}
+        </button>
+      </div>
+      <button class="help-btn" (click)="showHelp = !showHelp; $event.stopPropagation()" title="Help">
         ❓
       </button>
     </div>
     
-    <!-- Base Layer Controls -->
-    <div class="control-section">
-      <h3>Base Map</h3>
-      <div class="radio-group">
-        <label class="radio-option">
-          <input 
-            type="radio" 
-            name="baseLayer" 
-            [checked]="layerVisibility.osm"
-            (change)="toggleBaseLayer('osm')">
-          <span class="radio-label">Street Map</span>
-        </label>
-        <label class="radio-option">
-          <input 
-            type="radio" 
-            name="baseLayer" 
-            [checked]="layerVisibility.satellite"
-            (change)="toggleBaseLayer('satellite')">
-          <span class="radio-label">Satellite</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Connect Mode -->
-    <div class="control-section">
-      <h3>Connect Mode</h3>
-      <button 
-        class="connect-mode-btn"
-        [class.active]="isConnectMode"
-        (click)="toggleConnectMode()">
-        @if (isConnectMode) {
-          <span class="icon">🔗</span>
-          <span class="text">Click Points to Connect</span>
-          <span class="badge">Active</span>
-        } @else {
-          <span class="icon">🔗</span>
-          <span class="text">Enable Connect Mode</span>
-        }
-      </button>
-      @if (isConnectMode) {
-        <p class="mode-hint">💡 Click on two points to create a connection</p>
-      }
-    </div>
-
-    <!-- Actions -->
-    <div class="control-section">
-      <h3>Actions</h3>
-      <div class="button-group vertical">
-        <button class="action-btn clear-btn" (click)="clearAll()">
-          🗑️ Clear All
-        </button>
-      </div>
-    </div>
-    
-    <!-- Statistics -->
-    <div class="control-section stats-section">
-      <h3>Statistics</h3>
-      <div class="stat-grid">
-        <div class="mini-stat">
-          <div class="stat-value">{{ stats().totalPoints }}</div>
-          <div class="stat-label">Points</div>
+    @if (!isPanelCollapsed()) {
+      <div class="panel-body">
+        <!-- Base Layer Controls -->
+        <div class="control-section">
+          <h3>Base Map</h3>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input 
+                type="radio" 
+                name="baseLayer" 
+                [checked]="layerVisibility.osm"
+                (change)="toggleBaseLayer('osm')">
+              <span class="radio-label">Street Map</span>
+            </label>
+            <label class="radio-option">
+              <input 
+                type="radio" 
+                name="baseLayer" 
+                [checked]="layerVisibility.satellite"
+                (change)="toggleBaseLayer('satellite')">
+              <span class="radio-label">Satellite</span>
+            </label>
+          </div>
         </div>
-        <div class="mini-stat">
-          <div class="stat-value">{{ stats().totalConnections }}</div>
-          <div class="stat-label">Connections</div>
+
+        <!-- Connect Mode -->
+        <div class="control-section">
+          <h3>Connect Mode</h3>
+          <button 
+            class="connect-mode-btn"
+            [class.active]="isConnectMode"
+            (click)="toggleConnectMode()">
+            @if (isConnectMode) {
+              <span class="icon">🔗</span>
+              <span class="text">Click Points to Connect</span>
+              <span class="badge">Active</span>
+            } @else {
+              <span class="icon">🔗</span>
+              <span class="text">Enable Connect Mode</span>
+            }
+          </button>
+          @if (isConnectMode) {
+            <p class="mode-hint">💡 Click on two points to create a connection</p>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="control-section">
+          <h3>Actions</h3>
+          <div class="button-group vertical">
+            <button class="action-btn clear-btn" (click)="clearAll()">
+              🗑️ Clear All
+            </button>
+          </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="control-section stats-section">
+          <h3>Statistics</h3>
+          <div class="stat-grid">
+            <div class="mini-stat">
+              <div class="stat-value">{{ stats().totalPoints }}</div>
+              <div class="stat-label">Points</div>
+            </div>
+            <div class="mini-stat">
+              <div class="stat-value">{{ stats().totalConnections }}</div>
+              <div class="stat-label">Connections</div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-
+    }
   </div>
 
   <!-- Help Modal -->

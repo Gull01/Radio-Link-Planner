@@ -502,16 +502,21 @@
 
 /* Responsive */
 @media (max-width: 480px) {
+  .chat-widget {
+    bottom: 12px;
+    right: 12px;
+  }
+
   .chat-panel {
-    width: calc(100vw - 32px);
-    height: 460px;
-    max-height: calc(100vh - 140px);
+    width: calc(100vw - 24px);
+    height: 440px;
+    max-height: calc(100vh - 130px);
     border-radius: 14px;
   }
   
   .chat-fab {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border-radius: 50%;
   }
