@@ -220,6 +220,7 @@ def login():
     """Login user by username or email"""
     try:
         from sqlalchemy import func, or_
+        data = request.json or {}
         identifier = data.get('email') or data.get('username') or ''
         identifier = identifier.strip().lower()
         password = data.get('password', '')
