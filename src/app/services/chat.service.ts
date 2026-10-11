@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { POI, Connection, AnalysisStats } from '../models/poi.model';
+import { environment } from '../../environments/environment';
 
 export interface ChatMessage {
   id: string;
@@ -14,16 +15,16 @@ export interface ChatMessage {
   providedIn: 'root'
 })
 export class ChatService {
-  private readonly GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  private readonly GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
   
-  // API key stored in localStorage (set via settings dialog)
+  // API key stored in localStorage (set via settings dialog) or environment
   private apiKey = '';
   
   private conversationHistory: ChatMessage[] = [];
 
   constructor(private http: HttpClient) {
-    // Load API key from localStorage if available
-    this.apiKey = localStorage.getItem('gemini_api_key') || '';
+    // Load API key from localStorage or environment
+    this.apiKey = localStorage.getItem('gemini_api_key') || environment.geminiApiKey || '';
   }
 
   setApiKey(key: string): void {
@@ -33,7 +34,7 @@ export class ChatService {
 
   getApiKey(): string {
     if (!this.apiKey) {
-      this.apiKey = localStorage.getItem('gemini_api_key') || '';
+      this.apiKey = localStorage.getItem('gemini_api_key') || environment.geminiApiKey || '';
     }
     return this.apiKey;
   }
