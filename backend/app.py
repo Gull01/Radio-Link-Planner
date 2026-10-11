@@ -489,9 +489,9 @@ def proxy_chat():
         data = request.json or {}
         gemini_key = os.environ.get('GEMINI_API_KEY')
         if not gemini_key:
-            return jsonify({'error': 'Gemini API key is not configured on server'}), 500
+            return jsonify({'error': {'message': 'Gemini API key is not configured on server'}}), 500
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={gemini_key}"
         req = urllib.request.Request(
             url,
             data=json.dumps(data).encode('utf-8'),
@@ -505,9 +505,9 @@ def proxy_chat():
         try:
             return jsonify(json.loads(error_body)), e.code
         except Exception:
-            return jsonify({'error': error_body}), e.code
+            return jsonify({'error': {'message': error_body}}), e.code
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': {'message': str(e)}}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

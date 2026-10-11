@@ -15,7 +15,7 @@ export interface ChatMessage {
   providedIn: 'root'
 })
 export class ChatService {
-  private readonly GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+  private readonly GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent';
   
   // API key stored in localStorage (set via settings dialog) or environment
   private apiKey = '';
@@ -178,6 +178,13 @@ export class ChatService {
           errorMsg += `Error ${error.status}: ${error.error?.error?.message || 'Please try again later.'}`;
         }
         
+        const errorAssistantMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: errorMsg,
+          timestamp: new Date()
+        };
+        this.conversationHistory.push(errorAssistantMsg);
         return of(errorMsg);
       })
     );
