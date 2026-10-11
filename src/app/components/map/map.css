@@ -256,6 +256,11 @@
   z-index: 1;
 }
 
+/* Hide default zoom controls */
+.leaflet-control-zoom {
+  display: none !important;
+}
+
 /* Control Panel */
 .control-panel {
   position: absolute;

@@ -83,10 +83,11 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private initializeMap(): void {
-    // Initialize map centered on Islamabad/Rawalpindi
+    // Initialize map centered on Islamabad/Rawalpindi with zoom controls disabled
     this.map = L.map('map', {
       center: [33.6844, 73.0479], // Islamabad, Pakistan
-      zoom: 12
+      zoom: 12,
+      zoomControl: false
     });
 
     // Create custom marker icons
