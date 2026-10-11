@@ -34,12 +34,13 @@
       type="text" 
       [(ngModel)]="searchQuery"
       (keypress)="$event.key === 'Enter' ? searchCity() : null"
-      placeholder="🔍 Search for a city..."
+      placeholder="Search city..."
       class="search-input">
     <button 
       class="search-btn" 
       (click)="searchCity()"
-      [disabled]="isSearching || !searchQuery.trim()">
+      [disabled]="isSearching || !searchQuery.trim()"
+      title="Search city">
       {{ isSearching ? '⏳' : '🔍' }}
     </button>
   </div>

@@ -5,70 +5,88 @@
   display: flex;
 }
 
-/* City Search Bar */
+/* City Search Bar - Compact Corner Widget */
 .search-bar {
   position: absolute;
   top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 16px;
   z-index: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: white;
-  padding: 6px 14px;
-  border-radius: 25px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 4px 6px 4px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  animation: fadeInDown 0.3s ease;
+  transition: all 0.25s ease;
+  animation: fadeInRight 0.3s ease;
+}
+
+.search-bar:hover,
+.search-bar:focus-within {
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  border-color: rgba(102, 126, 234, 0.35);
 }
 
 .search-input {
   border: none;
   outline: none;
-  padding: 8px 15px;
-  font-size: 14px;
-  width: 300px;
-  border-radius: 20px;
-  background: #f5f5f5;
-  transition: all 0.3s ease;
+  padding: 4px 4px;
+  font-size: 13px;
+  width: 135px;
+  border-radius: 12px;
+  background: transparent;
+  color: #333;
+  transition: width 0.25s ease;
+}
+
+.search-input::placeholder {
+  color: #888;
+  font-size: 12px;
 }
 
 .search-input:focus {
-  background: #e8e8e8;
-  width: 350px;
+  width: 185px;
 }
 
 .search-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 8px 20px;
-  border-radius: 20px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  min-width: 50px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .search-btn:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
 
 .search-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
-@keyframes fadeInDown {
+@keyframes fadeInRight {
   from {
-    transform: translate(-50%, -10px);
+    transform: translateX(10px);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, 0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
