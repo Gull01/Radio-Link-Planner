@@ -2,6 +2,7 @@
 
 ## Overview
 A Tool to test link between radio internet devices
+Live link: https://radio-link-planner-blue.vercel.app/
 
 ## Key Features
 - **Link Analysis**: Tests and validates line-of-sight communication links.
